@@ -8,6 +8,5 @@ namespace gardenit_api_classes.Plant
     public class PlantResponseBase : PlantBase
     {
         public Guid Id { get; set; }
-        public DateTime CreateDate { get; set; }
     }
 }

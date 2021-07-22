@@ -23,6 +23,8 @@ namespace gardenit_webapi.Lib
                 Notes = newPlant.Notes,
                 Name = newPlant.Name,
                 Type = newPlant.Type,
+                DaysBetweenWatering = newPlant.DaysBetweenWatering,
+                ImageName = newPlant.ImageName,
                 CreateDate = DateTime.Now,
                 Waterings = new List<Watering>()
             };
@@ -33,18 +35,12 @@ namespace gardenit_webapi.Lib
             };
         }
 
-        public List<AllPlantsResponse> GetAllPlants() {
-            var result = new List<AllPlantsResponse>();
+        public List<PlantResponse> GetAllPlants() {
+            var result = new List<PlantResponse>();
             var storageResults = _storage.GetAllPlants();
 
             foreach (Plant x in storageResults) {
-                var nextPlant = new AllPlantsResponse() {
-                    Id = x.Id,
-                    Name = x.Name,
-                    Notes = x.Notes,
-                    Type = x.Type,
-                    CreateDate = x.CreateDate
-                };
+                var nextPlant = Convert(x);
                 result.Add(nextPlant);
             }
             return result;
@@ -52,15 +48,7 @@ namespace gardenit_webapi.Lib
 
         public PlantResponse GetPlant(Guid id) {
             var plant = _storage.GetPlant(id);
-
-            return new PlantResponse() {
-                Id = plant.Id,
-                Name = plant.Name,
-                Notes = plant.Notes,
-                Type = plant.Type,
-                Waterings = plant.Waterings.Select(x => Convert(x)).ToList(),
-                CreateDate = plant.CreateDate
-            };
+            return Convert(plant);
         }
 
         public void UpdatePlant(Guid id, UpdatePlantRequest request) {
@@ -68,6 +56,8 @@ namespace gardenit_webapi.Lib
             plant.Name = request.Name;
             plant.Notes = request.Notes;
             plant.Type = request.Type;
+            plant.DaysBetweenWatering = request.DaysBetweenWatering;
+            plant.ImageName = request.ImageName;
             _storage.UpdatePlant(plant);
         }
 
@@ -82,6 +72,19 @@ namespace gardenit_webapi.Lib
         private static WateringResponse Convert(Watering watering) {
             return new WateringResponse() {
                 WateringDate = watering.WateringDate
+            };
+        }
+
+        private static PlantResponse Convert(Plant plant) {
+            return new PlantResponse() {
+                Id = plant.Id,
+                Name = plant.Name,
+                Notes = plant.Notes,
+                Type = plant.Type,
+                ImageName = plant.ImageName,
+                DaysBetweenWatering = plant.DaysBetweenWatering,
+                CreateDate = plant.CreateDate,
+                Waterings = plant.Waterings.Select(x => Convert(x)).ToList(),
             };
         }
     }

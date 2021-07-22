@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
-
-using Lib = gardenit_webapi.Lib;
 
 namespace gardenit_webapi.Storage.EF
 {
@@ -27,6 +24,7 @@ namespace gardenit_webapi.Storage.EF
             return _context.Plants
                 .AsNoTracking()
                 .Include(x => x.Waterings)
+                .Where(x => x.IsDeleted == false)
                 .Select(Convert)
                 .ToList();
         }
@@ -38,7 +36,9 @@ namespace gardenit_webapi.Storage.EF
 
         public void DeletePlant(Guid id) {
             var plantToRemove = GetDbPlant(id);
-            _context.Remove(plantToRemove);
+            plantToRemove.IsDeleted = true;
+            _context.Update(plantToRemove);
+            _context.SaveChanges();
         }
 
         public void UpdatePlant(Lib.Plant updatedPlant) {
@@ -46,6 +46,9 @@ namespace gardenit_webapi.Storage.EF
             plantDb.Name = updatedPlant.Name;
             plantDb.Notes = updatedPlant.Notes;
             plantDb.Type = updatedPlant.Type;
+            plantDb.DaysBetweenWatering = updatedPlant.DaysBetweenWatering;
+            plantDb.ImageName = updatedPlant.ImageName;
+            
             _context.Update(plantDb);
             _context.SaveChanges();
         }
@@ -67,7 +70,7 @@ namespace gardenit_webapi.Storage.EF
             return _context.Plants
                 .AsNoTracking()
                 .Include(x => x.Waterings)
-                .First(x => x.Id == id);
+                .First(x => x.Id == id && x.IsDeleted == false);
         }
 
         // Converters
@@ -78,7 +81,10 @@ namespace gardenit_webapi.Storage.EF
                 CreateDate = plant.CreateDate,
                 Notes = plant.Notes,
                 Type = plant.Type,
-                Waterings = plant.Waterings.Select(x => Convert(x, plant.Id)).ToList()
+                ImageName = plant.ImageName,
+                DaysBetweenWatering = plant.DaysBetweenWatering,
+                Waterings = plant.Waterings.Select(x => Convert(x, plant.Id)).ToList(),
+                IsDeleted = false
             };
         }
 
@@ -97,6 +103,8 @@ namespace gardenit_webapi.Storage.EF
                 CreateDate = dbModel.CreateDate,
                 Notes = dbModel.Notes,
                 Type = dbModel.Type,
+                ImageName = dbModel.ImageName,
+                DaysBetweenWatering = dbModel.DaysBetweenWatering,
                 Waterings = dbModel.Waterings.Select(Convert).ToList()
             };
         }

@@ -8,8 +8,6 @@ namespace gardenit_webapi.Lib
     public class Plant : PlantBase
     {
         public Guid Id { get; set; }
-        public DateTime CreateDate { get; set; }
-        
         public List<Watering> Waterings { get; set; }
     }
 

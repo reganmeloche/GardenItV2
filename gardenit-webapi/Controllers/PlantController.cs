@@ -36,7 +36,7 @@ namespace gardenit_webapi.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<AllPlantsResponse>> GetAllPlants() 
+        public ActionResult<IEnumerable<PlantResponse>> GetAllPlants() 
         {
             var result = _handler.GetAllPlants();
             return result;

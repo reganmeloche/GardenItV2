@@ -9,7 +9,7 @@ namespace gardenit_webapi.Lib
     public interface IHandlePlantRequests
     {
         PlantResponse GetPlant(Guid id);
-        List<AllPlantsResponse> GetAllPlants();
+        List<PlantResponse> GetAllPlants();
         NewPlantResponse CreatePlant(NewPlantRequest request);
         void UpdatePlant(Guid id, UpdatePlantRequest request);
         void DeletePlant(Guid id);

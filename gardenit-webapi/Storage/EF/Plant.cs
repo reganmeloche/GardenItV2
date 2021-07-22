@@ -11,6 +11,9 @@ namespace gardenit_webapi.Storage.EF
         public string Type { get; set; }
         public string Notes { get; set; }
         public List<Watering> Waterings { get; set; }
+        public int DaysBetweenWatering { get; set; }
+        public bool IsDeleted { get; set; }
+        public string ImageName { get; set; }
     }
 
     public class Watering {
