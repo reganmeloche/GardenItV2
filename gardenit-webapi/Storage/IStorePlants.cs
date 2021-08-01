@@ -17,6 +17,8 @@ namespace gardenit_webapi.Storage
 
         void UpdatePlant(Plant updatedPlant);
 
-        void AddWatering(Guid plantId);
+        void AddWatering(Guid plantId, Watering watering);
+
+        void AddMoistureReading(Guid plantId, MoistureReading moistureReading);
     }
 }

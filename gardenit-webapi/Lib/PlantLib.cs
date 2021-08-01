@@ -1,33 +1,27 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 using gardenit_api_classes.Plant;
 using gardenit_api_classes.Water;
 using gardenit_webapi.Storage;
+using gardenit_webapi.Mqtt;
 
 namespace gardenit_webapi.Lib
 {
-    // This may just turn into the lib
-    public class PlantRequestHandler : IHandlePlantRequests
+    public class PlantLib : IPlantLib
     {
         private readonly IStorePlants _storage;
+        private readonly IMqttLib _mqttLib;
 
-        public PlantRequestHandler(IStorePlants storage) {
+        public PlantLib(IStorePlants storage, IMqttLib mqttLib) {
             _storage = storage;
+            _mqttLib = mqttLib;
         }
 
         public NewPlantResponse CreatePlant(NewPlantRequest newPlant) {
-            var plantToCreate = new Plant() {
-                Id = Guid.NewGuid(),
-                Notes = newPlant.Notes,
-                Name = newPlant.Name,
-                Type = newPlant.Type,
-                DaysBetweenWatering = newPlant.DaysBetweenWatering,
-                ImageName = newPlant.ImageName,
-                CreateDate = DateTime.Now,
-                Waterings = new List<Watering>()
-            };
+            var plantToCreate = new Plant(newPlant);
             _storage.CreatePlant(plantToCreate);
 
             return new NewPlantResponse() {
@@ -53,26 +47,26 @@ namespace gardenit_webapi.Lib
 
         public void UpdatePlant(Guid id, UpdatePlantRequest request) {
             var plant = _storage.GetPlant(id);
+            bool pollPeriodChange = request.PollPeriodMinutes != plant.PollPeriodMinutes;
+
             plant.Name = request.Name;
             plant.Notes = request.Notes;
             plant.Type = request.Type;
             plant.DaysBetweenWatering = request.DaysBetweenWatering;
             plant.ImageName = request.ImageName;
+            plant.PollPeriodMinutes = request.PollPeriodMinutes;
+            plant.HasDevice = request.HasDevice;
             _storage.UpdatePlant(plant);
+
+            // Check polling period change
+            if (pollPeriodChange) {
+                string message = $"WP{request.PollPeriodMinutes}";
+                _mqttLib.PublishMessage(id, message);
+            }
         }
 
         public void DeletePlant(Guid id) {
             _storage.DeletePlant(id);
-        }
-
-        public void WaterPlant(WateringRequest req) {
-            _storage.AddWatering(req.PlantId);
-        } 
-
-        private static WateringResponse Convert(Watering watering) {
-            return new WateringResponse() {
-                WateringDate = watering.WateringDate
-            };
         }
 
         private static PlantResponse Convert(Plant plant) {
@@ -84,7 +78,10 @@ namespace gardenit_webapi.Lib
                 ImageName = plant.ImageName,
                 DaysBetweenWatering = plant.DaysBetweenWatering,
                 CreateDate = plant.CreateDate,
-                Waterings = plant.Waterings.Select(x => Convert(x)).ToList(),
+                HasDevice = plant.HasDevice,
+                PollPeriodMinutes = plant.PollPeriodMinutes,
+                Waterings = plant.Waterings.Select(WateringLib.Convert).ToList(),
+                MoistureReadings = plant.MoistureReadings.Select(MoistureLib.Convert).ToList()
             };
         }
     }

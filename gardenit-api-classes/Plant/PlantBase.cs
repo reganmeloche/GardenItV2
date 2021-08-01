@@ -10,5 +10,7 @@ namespace gardenit_api_classes.Plant
         public int DaysBetweenWatering { get; set; }
         public string ImageName { get; set; }
         public DateTime CreateDate { get; set; }
+        public int PollPeriodMinutes { get; set; }
+        public bool HasDevice { get; set; }
     }
 }

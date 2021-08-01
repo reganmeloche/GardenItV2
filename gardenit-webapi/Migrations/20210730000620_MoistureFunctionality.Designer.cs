@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using gardenit_webapi.Storage.EF;
@@ -9,9 +10,10 @@ using gardenit_webapi.Storage.EF;
 namespace gardenit_webapi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210730000620_MoistureFunctionality")]
+    partial class MoistureFunctionality
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -23,6 +25,9 @@ namespace gardenit_webapi.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("Plant")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("PlantId")
@@ -68,7 +73,7 @@ namespace gardenit_webapi.Migrations
                     b.Property<string>("Notes")
                         .HasColumnType("text");
 
-                    b.Property<int>("PollPeriodMinutes")
+                    b.Property<int>("PollPeriodSeconds")
                         .HasColumnType("integer");
 
                     b.Property<string>("Type")
@@ -103,13 +108,11 @@ namespace gardenit_webapi.Migrations
 
             modelBuilder.Entity("gardenit_webapi.Storage.EF.MoistureReading", b =>
                 {
-                    b.HasOne("gardenit_webapi.Storage.EF.Plant", "Plant")
+                    b.HasOne("gardenit_webapi.Storage.EF.Plant", null)
                         .WithMany("MoistureReadings")
                         .HasForeignKey("PlantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Plant");
                 });
 
             modelBuilder.Entity("gardenit_webapi.Storage.EF.Watering", b =>

@@ -5,27 +5,26 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-using gardenit_api_classes.Plant;
-using gardenit_api_classes.Water;
+using gardenit_api_classes.Moisture;
 using gardenit_webapi.Lib;
 
 namespace gardenit_webapi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class WateringController : ControllerBase
+    public class MoistureController : ControllerBase
     {
-        private readonly IWateringLib _lib;
+        private readonly IMoistureLib _lib;
 
-        public WateringController(IWateringLib lib)
+        public MoistureController(IMoistureLib lib)
         {
             _lib = lib;
         }
 
-        [HttpPost]
-        public async Task<ActionResult> WaterPlant(WateringRequest request)
+        [HttpPost("Request")]
+        public async Task<ActionResult> RequestReading(MoistureReadingRequest request)
         {
-            await _lib.WaterPlant(request);
+            await _lib.RequestReading(request);
             return Ok();
         }
     }

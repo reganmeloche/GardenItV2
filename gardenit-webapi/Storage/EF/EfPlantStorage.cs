@@ -24,6 +24,7 @@ namespace gardenit_webapi.Storage.EF
             return _context.Plants
                 .AsNoTracking()
                 .Include(x => x.Waterings)
+                .Include(x => x.MoistureReadings)
                 .Where(x => x.IsDeleted == false)
                 .Select(Convert)
                 .ToList();
@@ -48,20 +49,34 @@ namespace gardenit_webapi.Storage.EF
             plantDb.Type = updatedPlant.Type;
             plantDb.DaysBetweenWatering = updatedPlant.DaysBetweenWatering;
             plantDb.ImageName = updatedPlant.ImageName;
+            plantDb.HasDevice = updatedPlant.HasDevice;
+            plantDb.PollPeriodMinutes = updatedPlant.PollPeriodMinutes;
             
             _context.Update(plantDb);
+
             _context.SaveChanges();
         }
 
-        public void AddWatering(Guid id) {
+        public void AddWatering(Guid plantId, Lib.Watering watering) {
             var plantDb = _context.Plants
                 .Include(x => x.Waterings)
-                .First(x => x.Id == id);
+                .First(x => x.Id == plantId && x.IsDeleted == false);
+
+            var dbWatering = Convert(watering, plantId);
             
-            plantDb.Waterings.Add(new Watering(){
-                PlantId = id,
-                WateringDate = DateTime.Now
-            });
+            plantDb.Waterings.Add(dbWatering);
+            
+            _context.SaveChanges();
+        }
+
+        public void AddMoistureReading(Guid plantId, Lib.MoistureReading moistureReading) {            
+            var plantDb = _context.Plants
+                .Include(x => x.MoistureReadings)
+                .First(x => x.Id == plantId && x.IsDeleted == false);
+
+            var dbReading = Convert(moistureReading, plantId);
+
+            plantDb.MoistureReadings.Add(dbReading);
             
             _context.SaveChanges();
         }
@@ -70,10 +85,11 @@ namespace gardenit_webapi.Storage.EF
             return _context.Plants
                 .AsNoTracking()
                 .Include(x => x.Waterings)
+                .Include(x => x.MoistureReadings)
                 .First(x => x.Id == id && x.IsDeleted == false);
         }
 
-        // Converters
+        /*** CONVERT LIB -> DB ***/
         private static Plant Convert(Lib.Plant plant) {
             return new Plant() {
                 Id = plant.Id,
@@ -83,19 +99,31 @@ namespace gardenit_webapi.Storage.EF
                 Type = plant.Type,
                 ImageName = plant.ImageName,
                 DaysBetweenWatering = plant.DaysBetweenWatering,
+                HasDevice = plant.HasDevice,
+                PollPeriodMinutes = plant.PollPeriodMinutes,
                 Waterings = plant.Waterings.Select(x => Convert(x, plant.Id)).ToList(),
+                MoistureReadings = plant.MoistureReadings.Select(x => Convert(x, plant.Id)).ToList(),
                 IsDeleted = false
+            };
+        }
+
+        private static MoistureReading Convert(Lib.MoistureReading moistureReading, Guid plantId) {
+            return new MoistureReading() {
+                PlantId = plantId,
+                ReadDate = moistureReading.ReadDate,
+                Value = moistureReading.Value,
             };
         }
 
         private static Watering Convert(Lib.Watering watering, Guid plantId) {
             return new Watering() {
-                Id = Guid.NewGuid(),
                 PlantId = plantId,
-                WateringDate = watering.WateringDate
+                WateringDate = watering.WateringDate,
+                Seconds = watering.Seconds
             };
         }
 
+        /*** CONVERT DB -> LIB ***/
         private static Lib.Plant Convert(Plant dbModel) {
             return new Lib.Plant() {
                 Id = dbModel.Id,
@@ -104,14 +132,25 @@ namespace gardenit_webapi.Storage.EF
                 Notes = dbModel.Notes,
                 Type = dbModel.Type,
                 ImageName = dbModel.ImageName,
+                HasDevice = dbModel.HasDevice,
+                PollPeriodMinutes = dbModel.PollPeriodMinutes,
                 DaysBetweenWatering = dbModel.DaysBetweenWatering,
-                Waterings = dbModel.Waterings.Select(Convert).ToList()
+                Waterings = dbModel.Waterings.Select(Convert).ToList(),
+                MoistureReadings = dbModel.MoistureReadings.Select(Convert).ToList()
             };
         }
 
         private static Lib.Watering Convert(Watering watering) {
             return new Lib.Watering() {
-                WateringDate = watering.WateringDate
+                WateringDate = watering.WateringDate,
+                Seconds = watering.Seconds
+            };
+        }
+
+        private static Lib.MoistureReading Convert(MoistureReading readingDb) {
+            return new Lib.MoistureReading() {
+                ReadDate = readingDb.ReadDate,
+                Value = readingDb.Value
             };
         }
     }

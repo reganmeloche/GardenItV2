@@ -14,45 +14,45 @@ namespace gardenit_webapi.Controllers
     [Route("[controller]")]
     public class PlantController : ControllerBase
     {
-        private readonly IHandlePlantRequests _handler;
+        private readonly IPlantLib _lib;
 
-        public PlantController(IHandlePlantRequests handler)
+        public PlantController(IPlantLib lib)
         {
-            _handler = handler;
+            _lib = lib;
         }
 
         [HttpPost]
         public ActionResult<NewPlantResponse> CreatePlant(NewPlantRequest request)
         {
-            var result = _handler.CreatePlant(request);
+            var result = _lib.CreatePlant(request);
             return result;
         }
 
         [HttpGet("{id}")]
         public ActionResult<PlantResponse> GetPlant(Guid id) 
         {
-            var result = _handler.GetPlant(id);
+            var result = _lib.GetPlant(id);
             return result;
         }
 
         [HttpGet]
         public ActionResult<IEnumerable<PlantResponse>> GetAllPlants() 
         {
-            var result = _handler.GetAllPlants();
+            var result = _lib.GetAllPlants();
             return result;
         }
 
         [HttpPut("{id}")]
         public ActionResult UpdatePlant(Guid id, UpdatePlantRequest request) 
         {
-            _handler.UpdatePlant(id, request);
+            _lib.UpdatePlant(id, request);
             return Ok();
         }
 
         [HttpDelete("{id}")]
         public ActionResult DeletePlant(Guid id) 
         {
-            _handler.DeletePlant(id);
+            _lib.DeletePlant(id);
             return Ok();
         }
     }
