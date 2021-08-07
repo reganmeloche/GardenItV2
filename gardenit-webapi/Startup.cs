@@ -19,6 +19,7 @@ using gardenit_webapi.Lib;
 using gardenit_webapi.Storage;
 using gardenit_webapi.Storage.EF;
 using gardenit_webapi.Mqtt;
+using gardenit_webapi.Controllers;
 
 namespace gardenit_webapi
 {
@@ -61,7 +62,17 @@ namespace gardenit_webapi
             };
             services.AddSingleton<IOptions<MqttOptions>>(x => Options.Create(mqttOptions));
             // This needs to be a singleton in order to hold onto the MQTT connection...
-            services.AddSingleton<IMqttLib, MqttLib>();        
+            services.AddSingleton<IMqttLib, MqttLib>();   
+
+            // Encryption Filter
+            var encryptionKey = Configuration["EncryptionOptions:EncryptionKey"] ?? 
+                Environment.GetEnvironmentVariable("EncryptionKey");
+
+            var encryptionFilterOptions = new EncryptionFilterOptions() {
+                EncryptionKey = encryptionKey
+            };
+            services.AddSingleton<IOptions<EncryptionFilterOptions>>(x => Options.Create(encryptionFilterOptions));
+            services.AddScoped<EncryptionFilterAttribute>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

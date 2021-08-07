@@ -9,6 +9,6 @@ namespace gardenit_webapi.Lib
 {
     public interface IWateringLib
     {
-        Task WaterPlant(WateringRequest req);
+        Task WaterPlant(WateringRequest req, Guid userId);
     }
 }

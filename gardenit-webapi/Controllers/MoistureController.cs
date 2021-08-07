@@ -10,6 +10,7 @@ using gardenit_webapi.Lib;
 
 namespace gardenit_webapi.Controllers
 {
+    [ServiceFilter(typeof(EncryptionFilterAttribute))]
     [ApiController]
     [Route("[controller]")]
     public class MoistureController : ControllerBase
@@ -26,6 +27,10 @@ namespace gardenit_webapi.Controllers
         {
             await _lib.RequestReading(request);
             return Ok();
+        }
+
+        private Guid UserId() {
+            return Guid.Parse(HttpContext.Request.Headers["UserId"].FirstOrDefault());
         }
     }
 }

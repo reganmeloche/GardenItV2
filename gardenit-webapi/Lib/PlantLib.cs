@@ -20,18 +20,18 @@ namespace gardenit_webapi.Lib
             _mqttLib = mqttLib;
         }
 
-        public NewPlantResponse CreatePlant(NewPlantRequest newPlant) {
+        public NewPlantResponse CreatePlant(NewPlantRequest newPlant, Guid userId) {
             var plantToCreate = new Plant(newPlant);
-            _storage.CreatePlant(plantToCreate);
+            _storage.CreatePlant(plantToCreate, userId);
 
             return new NewPlantResponse() {
                 Id = plantToCreate.Id
             };
         }
 
-        public List<PlantResponse> GetAllPlants() {
+        public List<PlantResponse> GetAllPlants(Guid userId) {
             var result = new List<PlantResponse>();
-            var storageResults = _storage.GetAllPlants();
+            var storageResults = _storage.GetAllPlants(userId);
 
             foreach (Plant x in storageResults) {
                 var nextPlant = Convert(x);
@@ -40,13 +40,13 @@ namespace gardenit_webapi.Lib
             return result;
         }
 
-        public PlantResponse GetPlant(Guid id) {
-            var plant = _storage.GetPlant(id);
+        public PlantResponse GetPlant(Guid id, Guid userId) {
+            var plant = _storage.GetPlant(id, userId);
             return Convert(plant);
         }
 
-        public void UpdatePlant(Guid id, UpdatePlantRequest request) {
-            var plant = _storage.GetPlant(id);
+        public void UpdatePlant(Guid id, UpdatePlantRequest request, Guid userId) {
+            var plant = _storage.GetPlant(id, userId);
             bool pollPeriodChange = request.PollPeriodMinutes != plant.PollPeriodMinutes;
 
             plant.Name = request.Name;
@@ -56,7 +56,7 @@ namespace gardenit_webapi.Lib
             plant.ImageName = request.ImageName;
             plant.PollPeriodMinutes = request.PollPeriodMinutes;
             plant.HasDevice = request.HasDevice;
-            _storage.UpdatePlant(plant);
+            _storage.UpdatePlant(plant, userId);
 
             // Check polling period change
             if (pollPeriodChange) {
@@ -65,8 +65,8 @@ namespace gardenit_webapi.Lib
             }
         }
 
-        public void DeletePlant(Guid id) {
-            _storage.DeletePlant(id);
+        public void DeletePlant(Guid id, Guid userId) {
+            _storage.DeletePlant(id, userId);
         }
 
         private static PlantResponse Convert(Plant plant) {

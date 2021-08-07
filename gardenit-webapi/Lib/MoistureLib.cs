@@ -18,6 +18,7 @@ namespace gardenit_webapi.Lib
         }
         
         public async Task RequestReading(MoistureReadingRequest req) {
+            // TODO: Get the plant and verif userId??
             string message = "RM";
             await _mqttLib.PublishMessage(req.PlantId, message);
         } 

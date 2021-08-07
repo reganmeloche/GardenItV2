@@ -9,10 +9,10 @@ namespace gardenit_webapi.Lib
 {
     public interface IPlantLib
     {
-        PlantResponse GetPlant(Guid id);
-        List<PlantResponse> GetAllPlants();
-        NewPlantResponse CreatePlant(NewPlantRequest request);
-        void UpdatePlant(Guid id, UpdatePlantRequest request);
-        void DeletePlant(Guid id);
+        PlantResponse GetPlant(Guid id, Guid userId);
+        List<PlantResponse> GetAllPlants(Guid userId);
+        NewPlantResponse CreatePlant(NewPlantRequest request, Guid userId);
+        void UpdatePlant(Guid id, UpdatePlantRequest request, Guid userId);
+        void DeletePlant(Guid id, Guid userId);
     }
 }

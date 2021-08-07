@@ -14,10 +14,21 @@ namespace gardenit_webapi.Storage.EF
             _context = context;
         }
 
-        public void CreatePlant(Lib.Plant plant) {
-            var dbModel = Convert(plant);
+        public void CreatePlant(Lib.Plant plant, Guid userId) {
+            var dbModel = Convert(plant, userId);
             _context.Plants.Add(dbModel);
             _context.SaveChanges();
+        }
+
+        public List<Lib.Plant> GetAllPlants(Guid userId) {
+            return _context.Plants
+                .AsNoTracking()
+                .Include(x => x.Waterings)
+                .Include(x => x.MoistureReadings)
+                .Where(x => x.IsDeleted == false)
+                .Where(x => x.UserId == userId)
+                .Select(Convert)
+                .ToList();
         }
 
         public List<Lib.Plant> GetAllPlants() {
@@ -30,20 +41,20 @@ namespace gardenit_webapi.Storage.EF
                 .ToList();
         }
 
-        public Lib.Plant GetPlant(Guid id) {
-            var dbResult = GetDbPlant(id);
+        public Lib.Plant GetPlant(Guid id, Guid userId) {
+            var dbResult = GetDbPlant(id, userId);
             return Convert(dbResult);
         }
 
-        public void DeletePlant(Guid id) {
-            var plantToRemove = GetDbPlant(id);
+        public void DeletePlant(Guid id, Guid userId) {
+            var plantToRemove = GetDbPlant(id, userId);
             plantToRemove.IsDeleted = true;
             _context.Update(plantToRemove);
             _context.SaveChanges();
         }
 
-        public void UpdatePlant(Lib.Plant updatedPlant) {
-            var plantDb = GetDbPlant(updatedPlant.Id);
+        public void UpdatePlant(Lib.Plant updatedPlant, Guid userId) {
+            var plantDb = GetDbPlant(updatedPlant.Id, userId);
             plantDb.Name = updatedPlant.Name;
             plantDb.Notes = updatedPlant.Notes;
             plantDb.Type = updatedPlant.Type;
@@ -57,10 +68,10 @@ namespace gardenit_webapi.Storage.EF
             _context.SaveChanges();
         }
 
-        public void AddWatering(Guid plantId, Lib.Watering watering) {
+        public void AddWatering(Guid plantId, Lib.Watering watering, Guid userId) {
             var plantDb = _context.Plants
                 .Include(x => x.Waterings)
-                .First(x => x.Id == plantId && x.IsDeleted == false);
+                .First(x => x.Id == plantId && x.IsDeleted == false && x.UserId == userId);
 
             var dbWatering = Convert(watering, plantId);
             
@@ -81,16 +92,16 @@ namespace gardenit_webapi.Storage.EF
             _context.SaveChanges();
         }
 
-        private Plant GetDbPlant(Guid id) {
+        private Plant GetDbPlant(Guid id, Guid userId) {
             return _context.Plants
                 .AsNoTracking()
                 .Include(x => x.Waterings)
                 .Include(x => x.MoistureReadings)
-                .First(x => x.Id == id && x.IsDeleted == false);
+                .First(x => x.Id == id && x.IsDeleted == false && x.UserId == userId);
         }
 
         /*** CONVERT LIB -> DB ***/
-        private static Plant Convert(Lib.Plant plant) {
+        private static Plant Convert(Lib.Plant plant, Guid userId) {
             return new Plant() {
                 Id = plant.Id,
                 Name = plant.Name,
@@ -103,7 +114,8 @@ namespace gardenit_webapi.Storage.EF
                 PollPeriodMinutes = plant.PollPeriodMinutes,
                 Waterings = plant.Waterings.Select(x => Convert(x, plant.Id)).ToList(),
                 MoistureReadings = plant.MoistureReadings.Select(x => Convert(x, plant.Id)).ToList(),
-                IsDeleted = false
+                IsDeleted = false,
+                UserId = userId
             };
         }
 

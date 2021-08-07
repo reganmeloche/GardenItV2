@@ -11,6 +11,7 @@ using gardenit_webapi.Lib;
 
 namespace gardenit_webapi.Controllers
 {
+    [ServiceFilter(typeof(EncryptionFilterAttribute))]
     [ApiController]
     [Route("[controller]")]
     public class WateringController : ControllerBase
@@ -25,8 +26,12 @@ namespace gardenit_webapi.Controllers
         [HttpPost]
         public async Task<ActionResult> WaterPlant(WateringRequest request)
         {
-            await _lib.WaterPlant(request);
+            await _lib.WaterPlant(request, UserId());
             return Ok();
+        }
+
+        private Guid UserId() {
+            return Guid.Parse(HttpContext.Request.Headers["UserId"].FirstOrDefault());
         }
     }
 }

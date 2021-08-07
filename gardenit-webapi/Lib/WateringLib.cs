@@ -19,7 +19,7 @@ namespace gardenit_webapi.Lib
             _mqttLib = mqttLib;
         }
 
-        public async Task WaterPlant(WateringRequest req) {
+        public async Task WaterPlant(WateringRequest req, Guid userId) {
             int ms = req.Seconds * 1000;
             string message = $"WW{ms}";
             await _mqttLib.PublishMessage(req.PlantId, message);
@@ -29,7 +29,7 @@ namespace gardenit_webapi.Lib
                 Seconds = req.Seconds
             };
             
-            _storage.AddWatering(req.PlantId, watering);
+            _storage.AddWatering(req.PlantId, watering, userId);
         } 
 
         public static WateringResponse Convert(Watering watering) {

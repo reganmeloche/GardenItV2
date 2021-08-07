@@ -39,5 +39,9 @@ namespace gardenit_webapi.Controllers
    
             return Ok();
         }
+
+        private Guid UserId() {
+            return Guid.Parse(HttpContext.Request.Headers["UserId"].FirstOrDefault());
+        }
     }
 }

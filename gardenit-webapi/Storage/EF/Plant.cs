@@ -17,6 +17,7 @@ namespace gardenit_webapi.Storage.EF
         public string ImageName { get; set; }
         public int PollPeriodMinutes { get; set; }
         public bool HasDevice { get; set; }
+        public Guid UserId { get; set; }
     }
 
     public class Watering {
