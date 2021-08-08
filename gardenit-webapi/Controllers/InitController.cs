@@ -40,6 +40,12 @@ namespace gardenit_webapi.Controllers
             return Ok();
         }
 
+        [HttpGet]
+        public ActionResult Ping()
+        {
+            return Ok("Hello!");
+        }
+
         private Guid UserId() {
             return Guid.Parse(HttpContext.Request.Headers["UserId"].FirstOrDefault());
         }
