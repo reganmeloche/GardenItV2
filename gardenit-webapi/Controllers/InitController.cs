@@ -40,7 +40,7 @@ namespace gardenit_webapi.Controllers
             return Ok();
         }
 
-        [HttpGet]
+        [HttpGet("ping")]
         public ActionResult Ping()
         {
             return Ok("Hello!");
