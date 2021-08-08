@@ -49,16 +49,17 @@ namespace gardenit_webapi
             services.AddScoped<IStorePlants, EfPlantStorage>();
             services.AddMemoryCache();
 
-            string connectionString = Configuration.GetConnectionString("DefaultDB");
+            string connectionString = Configuration.GetConnectionString("DefaultDB") ?? 
+                Environment.GetEnvironmentVariable("DefaultDB");
             services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
         
             // MQTT
             // TODO: May replace with env var option
             var mqttOptions = new MqttOptions() {
-                Host = Configuration["MqttOptions:Host"],
-                User = Configuration["MqttOptions:User"],
-                Password = Configuration["MqttOptions:Password"],
-                Port = Convert.ToInt32(Configuration["MqttOptions:Port"]),
+                Host = Configuration["MqttOptions:Host"] ?? Environment.GetEnvironmentVariable("MqttHost"), 
+                User = Configuration["MqttOptions:User"] ?? Environment.GetEnvironmentVariable("MqttUser"),
+                Password = Configuration["MqttOptions:Password"] ?? Environment.GetEnvironmentVariable("MqttPassword"),
+                Port = Convert.ToInt32(Configuration["MqttOptions:Port"] ?? Environment.GetEnvironmentVariable("MqttPort"))
             };
             services.AddSingleton<IOptions<MqttOptions>>(x => Options.Create(mqttOptions));
             // This needs to be a singleton in order to hold onto the MQTT connection...
