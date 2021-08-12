@@ -1,17 +1,12 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -65,6 +60,10 @@ namespace gardenit_webapi
             // This needs to be a singleton in order to hold onto the MQTT connection...
             services.AddSingleton<IMqttLib, MqttLib>();   
 
+            // Async init
+            services.AddScoped<AsyncInitializer>();
+            services.AddHostedService<AsyncHostedService>();
+
             // Encryption Filter
             var encryptionKey = Configuration["EncryptionOptions:EncryptionKey"] ?? 
                 Environment.GetEnvironmentVariable("EncryptionKey");
@@ -106,5 +105,29 @@ namespace gardenit_webapi
                 endpoints.MapControllers();
             });
         }
+    }
+
+    public class AsyncHostedService: IHostedService
+    {
+        // We need to inject the IServiceProvider so we can create 
+        // the scoped service, MyDbContext
+        private readonly IServiceProvider _serviceProvider;
+        public AsyncHostedService(IServiceProvider serviceProvider)
+        {
+            _serviceProvider = serviceProvider;
+        }
+
+        public async Task StartAsync(CancellationToken cancellationToken)
+        {
+            // Create a new scope to retrieve scoped services
+            using(var scope = _serviceProvider.CreateScope())
+            {
+                var initializer = scope.ServiceProvider.GetRequiredService<AsyncInitializer>();
+                await initializer.Initialize();
+            }
+        }
+
+        // noop
+        public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
     }
 }
